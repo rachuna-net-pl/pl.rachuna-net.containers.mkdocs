@@ -1,0 +1,13 @@
+config:
+  skip-policy:
+    - aws/*
+    - gcp/*
+    - azure/*
+  namespaces:
+    - builtin.checks.config
+
+misconf:
+  config:
+    severity:
+      - HIGH
+      - CRITICAL
