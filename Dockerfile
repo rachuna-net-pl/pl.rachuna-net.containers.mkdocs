@@ -7,6 +7,10 @@ LABEL Application='pl.rachuna-net.containers.mkdocs'
 LABEL Description='Mkdocs container image'
 LABEL version="${CONTAINER_VERSION}"
 
+ENV DEBIAN_FRONTEND=noninteractive
+
+COPY scripts/ /opt/scripts/
+
 # Install packages
 RUN apt-get update && apt-get --no-install-recommends install -y \
         git \
@@ -17,9 +21,20 @@ RUN apt-get update && apt-get --no-install-recommends install -y \
         libpng-dev \
         libz-dev \
         python3-pip \
-    && rm -rf /usr/lib/python3.12/EXTERNALLY-MANAGED \
-    && pip install --ignore-installed mkdocs-material mkdocs-material[imaging] \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    # Install mkdocs
+    && pip3 install --no-cache-dir --break-system-packages --ignore-installed \
+        mkdocs-material \
+        mkdocs-material[imaging] \
+    
+    # Make scripts executable
+    && chmod +x /opt/scripts/*.bash \
 
-WORKDIR /docs
+    # Create a non-root user and set permissions
+    && useradd -m -s /bin/bash nonroot \
+    && chown -R nonroot:nonroot /opt/scripts
+
+USER nonroot
+
+ENTRYPOINT [ "/opt/scripts/entrypoint.bash" ]
